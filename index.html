@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin=""/>
+</head>
+<body>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin="">
+    </script>
+    <div class="parent">
+        <div class="header">
+            <div class="heading">
+                IP Address Tracker
+            </div>
+            <div class="search-field">
+                <input type="text" class="ip-input" placeholder="Search for any IP Address or Domain" id="input">
+                <button id="button">></button>
+            </div>            
+        </div>
+        <div class="mapbox" id="mapid"></div>
+    </div>
+    <div class="statbox">
+        <div class="ip-address box-grid">
+            <div class="title">
+                IP ADDRESS
+            </div>
+            <div class="ip-value value" id="ip">
+                
+            </div>
+        </div>
+        <div class="location box-grid">
+            <div class="title">
+                LOCATION
+            </div>
+            <div class="value" id="location">
+            </div>
+        </div>
+        <div class="timezone box-grid">
+            <div class="title">
+                TIMEZONE
+            </div>
+            <div class="value" id="timezone">
+            </div>
+        </div>
+        <div class="isp box-grid">
+            <div class="title">
+                ISP
+            </div>
+            <dv class="value" id="isp">
+            </dv>
+        </div>
+    </div>
+
+    <script>
+        const myIcon = L.icon({
+            iconUrl: 'icon.png',
+            iconSize: [50,42],
+            iconAnchor: [25, 36]
+        });
+        const mymap = L.map('mapid');
+        const marker = L.marker([0,0], {icon: myIcon} ).addTo(mymap);
+        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const tiles = L.tileLayer(tileUrl);
+        tiles.addTo(mymap);
+        mymap.setView([0,0], 4);
+        document.querySelector("body").addEventListener("load", getData());
+        document.getElementById("button").addEventListener("click", () => getResults());
+
+
+        async function getData()
+        {
+            let url = "https://geo.ipify.org/api/v1?apiKey=<<API_KEY>>&ipAddress=";
+            const response = await fetch(url);
+            const data = await response.json();
+            console.log(data);
+            document.getElementById("ip").innerHTML = data.ip;
+            document.getElementById("location").innerHTML = `${data.location.city}, ${data.location.country}`;
+            document.getElementById("timezone").innerHTML = data.location.timezone;
+            document.getElementById("isp").innerHTML = data.isp;
+            let lat = data.location.lat;
+            let lon = data.location.lng;
+            mymap.setView([lat,lon], 6);
+            L.marker([lat,lon], {icon: myIcon}).addTo(mymap);
+        }
+
+        async function getResults()
+        {  
+            marker.remove();
+            let input = document.getElementById("input").value;
+            if(input !== "")
+            {
+                let url = `https://geo.ipify.org/api/v1?apiKey=<<API_KEY>>&ipAddress=${input}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                console.log(data);
+                document.getElementById("ip").innerHTML = data.ip;
+                document.getElementById("location").innerHTML = `${data.location.city}, ${data.location.country}`;
+                document.getElementById("timezone").innerHTML = data.location.timezone;
+                document.getElementById("isp").innerHTML = data.isp;
+                let lat = data.location.lat;
+                let lon = data.location.lng;
+                mymap.setView([lat,lon], 6);
+                L.marker([lat,lon], {icon: myIcon}).addTo(mymap);
+            }
+            else
+            {
+                alert("Please enter a value");
+            }
+            
+        }
+        
+    </script>
+</body>
+</html>
